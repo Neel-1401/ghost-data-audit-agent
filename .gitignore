@@ -5,3 +5,11 @@ code/.llm_cache.json
 code/.image_cache.json
 audit_viewer_v2.html
 backup/
+
+.env
+.venv/
+backup/
+agent-trace/
+*.zip
+audit_viewer*.html
+__pycache__/
