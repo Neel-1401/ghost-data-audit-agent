@@ -1,0 +1,44 @@
+{
+  "provider": "Google Gemini",
+  "model": "gemini-3.5-flash",
+  "calls": 0,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "total_tokens": 0,
+  "estimated_cost_usd": null,
+  "price_per_m_input": null,
+  "price_per_m_output": null,
+  "cache_hits": 398,
+  "rule_fallbacks": 0,
+  "errors": [],
+  "text_sources": {
+    "gemini": 398,
+    "gemini_fresh": 0,
+    "gemini_cached": 398,
+    "rules": 0,
+    "unanswered": 0
+  },
+  "images": {
+    "provider": "Google Gemini",
+    "model": "gemini-3.5-flash",
+    "calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0,
+    "estimated_cost_usd": null,
+    "price_per_m_input": null,
+    "price_per_m_output": null,
+    "cache_hits": 11,
+    "rule_fallbacks": 0,
+    "errors": [],
+    "sources": {
+      "llm": 0,
+      "cache": 11,
+      "skipped": 0
+    }
+  },
+  "requests_file": "dataset\\deletion_requests.csv",
+  "requests": 518,
+  "classified_texts": 398,
+  "seconds": 9.8
+}
