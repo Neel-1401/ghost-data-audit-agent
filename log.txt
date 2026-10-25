@@ -432,3 +432,115 @@ branch=main
 repo_root=C:\Users\neel1\projects\hackerrank-orchestrate-october26
 worktree=main
 parent_agent=none
+
+## [2026-10-25T10:33:51Z] Local commit "Submission candidate v1" and output.csv backup
+
+User Prompt (verbatim, secrets redacted):
+Before any changes: commit the current working state locally with git (message "Submission candidate v1", do NOT push), and copy output.csv to backup/output_v1.csv (create backup/ at the repo root, outside code/, and add it to .gitignore). If anything below makes things worse, we roll back to this commit.
+
+Agent Response Summary:
+Committed the full working state locally on main as 9773f3f "Submission candidate v1" and did not push. Before committing, confirmed that .env, both Gemini caches and audit_viewer_v2.html are gitignored and not staged. Git stores output.csv with LF line endings while the working copy is CRLF; with core.autocrlf=true, checking it out reproduces the exact bytes (same SHA-256, 1283db7b...). Copied output.csv to backup/output_v1.csv (identical hash) and added backup/ to .gitignore; that .gitignore change is the only uncommitted edit, besides this log entry.
+
+Actions:
+* git add -A; git commit -m "Submission candidate v1" (local only, no push)
+* mkdir backup; cp output.csv backup/output_v1.csv; appended backup/ to .gitignore
+* Verified hashes: working output.csv = committed version after CRLF checkout = backup copy
+
+Context:
+tool=Claude Code
+model=claude-opus-5-5
+branch=main
+repo_root=C:\Users\neel1\projects\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
+## [2026-10-25T10:50:23Z] Account linker: global assignment with confidence (experiment)
+
+User Prompt (verbatim, secrets redacted):
+Improve the account linker for ambiguous cases. Rules: general logic only, no case IDs, no answers from sample_output.csv, and don't use the case_id ordering pattern.
+1. Treat linking as a global one-to-one assignment: every deletion request (classified as deletion) gets at most one account_service DELETE_RECORD, every account goes to at most one request, and choose the assignment that best fits all the evidence at once (e.g. Hungarian / min-cost matching on time gap to reported_at, plus bonuses for evidence). Run it over sample and evaluation requests together, since they share the same activity stream.
+2. Add the batch tie-breaker you suggested earlier: the deletion worker processes one person's resources together, so an account delete close in time to deletes of resources ALREADY linked to that user (their analytics, search, support, audit or backup records) should score higher.
+3. Give every link a confidence: evidence, unique, strong-batch, weak-guess.
+4. Measure honestly: on the 32 samples, hide the evidence-based links and report how often the assignment alone picks the right account. Also show the confidence breakdown for the 518.
+5. Decide what to output using the scorer: compare (a) only confident links vs (b) all links including weak guesses. Keep whichever gives higher F1 AND exact-match on the samples; if it's a tie, prefer fewer guesses.
+Report before/after numbers. Log everything in code/evaluation/notes.md.
+(followed by "resume" after an interruption)
+
+Agent Response Summary:
+Replaced the elimination loop with a Hungarian min-cost assignment per group of competing requests, with a batch bonus, a shared evidence bonus, the reported_at gap and a requested_at first-in-first-out tie-breaker, and gave each link a confidence (evidence / unique / strong-batch / weak-guess). Key finding: the old elimination visited requests in sorted case_id order, so where several requests see the same single account, the first case_id claimed it. Four sample links and 14 evaluation links were confident only because of that order, and the baseline 21/32 depended on it. Results: assignment alone gets 11/12 hidden sample evidence links right; weak guesses are right 4 of 10 (chance); the 518 split is evidence 204, unique 66, strong-batch 3, weak-guess 225, no candidate 10. Scorer: (a) confident links only gives F1 0.952 and 19/32, (b) with guesses gives 0.948 and 20/32; neither wins both, so the tie rule picks (a). Baseline was 0.963 and 21/32. output.csv was not overwritten: (a) on the 518 validates with 0 errors and changes 28 rows. The changes are uncommitted, and keeping them or rolling back to 9773f3f is left to the user.
+
+Actions:
+* Edited code/loaders.py (min_cost_assignment, AccountLink confidence/guess, global assignment, batch run, costs) and code/audit.py (guesses come from the assignment)
+* Analysis scripts in the scratchpad; scorer runs for (a) and (b); 518 run to a temp file plus the validator
+* Wrote the Round 9 section and table row in code/evaluation/notes.md
+
+Context:
+tool=Claude Code
+model=claude-opus-5-5
+branch=main
+repo_root=C:\Users\neel1\projects\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
+## [2026-10-25T11:03:33Z] Final re-run: sample score dropped, round 9 linker rolled back
+
+User Prompt (verbatim, secrets redacted):
+Final: re-run the full pipeline, the validator and the scorer. Compare output.csv with backup/output_v1.csv: how many cases changed status, how many steps were added or removed. If the sample score dropped, roll back to the "Submission candidate v1" commit. Otherwise update evaluation_report.md (new metrics plus a section on the linker and the independent audit), usage_report.md if any model calls happened, and notes.md. Then rebuild the v2 viewer.
+
+Agent Response Summary:
+Re-ran the full pipeline with the round 9 linker: the validator had 0 errors, and compared with backup/output_v1.csv 28 rows changed (1 status change, 20 steps added, 14 removed). The sample score dropped from F1 0.963 / 21/32 exact to 0.952 / 19/32, so as agreed the code was rolled back to commit 9773f3f by restoring code/loaders.py and code/audit.py only. log.txt, notes.md and .gitignore were kept because the log is append-only. After the rollback, output.csv is byte-identical to backup/output_v1.csv, sample_preds.csv matches its committed hash, the validator has 0 errors and the samples are back to 32/32, 0.963, 21/32. evaluation_report.md and usage_report.md were not changed (no new metrics, 0 model calls). notes.md records the rollback, the two known limitations kept by it, and the rule-ablation table. The v2 viewer was rebuilt; the temporary worktree and __pycache__ were removed. The independent audit subagent had not finished at this point.
+
+Actions:
+* python code/main.py, validate_output.py, sample run plus scorer; comparison with backup/output_v1.csv
+* git checkout 9773f3f -- code/loaders.py code/audit.py; re-ran and verified hashes and scores
+* Edited code/evaluation/notes.md; python code/ui/build_viewer_v2.py; git worktree remove; removed __pycache__
+
+Context:
+tool=Claude Code
+model=claude-opus-5-5
+branch=main
+repo_root=C:\Users\neel1\projects\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
+## [2026-10-25T11:04:07Z] Independent audit subagent: 15 evaluation cases
+
+User Prompt (verbatim, secrets redacted):
+(subagent task from the main Claude Code session: independent audit of 15 evaluation cases)
+
+Agent Response Summary:
+Hand-audited case_342, 199, 177, 308, 390, 355, 544, 90, 151, 305, 455, 317, 77, 155 and 366 using only problem_statement.md, AGENTS.md sections 5-6 and dataset/ files. Helper search scripts were written to a private scratchpad folder. No code/, output, notes or report files were opened. Findings: 5 COMPLETE (308, 390, 151, 77, 155) and 10 INCOMPLETE. Some account, analytics and audit-record IDs could only be tied to the subject through activity-batch timing or post-audit_at bundles, and these were flagged as uncertain in the report to the parent session.
+
+Actions:
+* Read problem_statement.md, dataset CSVs and evidence files (SQL, JSON, logs, PDF text, one PNG)
+* Wrote and ran helper search scripts in the session scratchpad (indep_audit/)
+* Appended this entry to log.txt
+
+Context:
+tool=Claude Code
+model=claude-opus-5-5
+branch=main
+repo_root=C:\Users\neel1\projects\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=Claude Code main session
+
+## [2026-10-25T11:09:39Z] Independent audit compared; status-matched account fix (round 10)
+
+User Prompt (verbatim, secrets redacted):
+(no new user message: continuation of the robustness-check task, step 3 "Fix only disagreements that reveal a general bug. Re-run the samples after each fix", and of the final instruction to update the reports and rebuild the viewer if the score did not drop, after the independent audit subagent reported)
+
+Agent Response Summary:
+Compared the subagent's 15-case audit with output.csv: all 15 statuses agree and 6 cases agree step for step. In 6 cases the auditor named an account we left ambiguous, using the fact that an account delete's result mirrors the request's reported_status. Verified independently (29/31 sample gold accounts, 203/204 evidence-linked evaluation accounts), this is a general gap, fixed in AccountLinker as a preference. Samples rose from F1 0.963 / 21/32 to 0.976 / 24/32 with no new extras; the 518 run validates with 0 errors; against backup/output_v1.csv 130 rows changed (137 steps added, 16 removed, 1 status change: case_417, verified present in evidence_39). Other disagreements were kept as ours, with reasons: analytics chosen by timestamp seconds (a generator artifact), anonymized analytics the auditor did not search for, and an audit record linked only by post-audit evidence. Updated evaluation_report.md (new metrics plus linker and audit sections), notes.md (round 10) and the README results; usage_report.md is unchanged (0 model calls); the v2 viewer was rebuilt.
+
+Actions:
+* Edited code/loaders.py (STATUS_RESULT preference); verification scripts in the scratchpad
+* python code/main.py (518 plus samples plus custom), validate_output.py, scorer; checked case_417 in evidence_39
+* Edited code/evaluation/evaluation_report.md, code/evaluation/notes.md, README.md; python code/ui/build_viewer_v2.py
+
+Context:
+tool=Claude Code
+model=claude-opus-5-5
+branch=main
+repo_root=C:\Users\neel1\projects\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none

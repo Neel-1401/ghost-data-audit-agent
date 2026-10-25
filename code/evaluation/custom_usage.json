@@ -40,5 +40,5 @@
   "requests_file": "code\\evaluation\\custom_cases.csv",
   "requests": 7,
   "classified_texts": 404,
-  "seconds": 4.4
+  "seconds": 4.7
 }

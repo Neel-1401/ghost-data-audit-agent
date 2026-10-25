@@ -40,5 +40,5 @@
   "requests_file": "dataset\\deletion_requests.csv",
   "requests": 518,
   "classified_texts": 398,
-  "seconds": 9.8
+  "seconds": 6.0
 }

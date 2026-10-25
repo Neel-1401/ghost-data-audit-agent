@@ -836,7 +836,8 @@ class AccountLinker:
        and reported_at + WINDOW_AFTER (and not after audit_at). Candidates are
        removed when evidence ties them to a different user (evidence from any
        capture time may only exclude, never assign), or when another request
-       has already claimed them.
+       has already claimed them. Candidates whose reported_result matches the
+       request's reported_status are preferred (the claim mirrors that run).
     3. Elimination: a request with exactly one candidate claims it, which
        removes it from every other request; repeat until stable. While
        candidates remain, prefer those that appear in evidence visible at the
@@ -851,6 +852,7 @@ class AccountLinker:
     WINDOW_BEFORE_MIN = 120
     WINDOW_AFTER_MIN = 15
     FAR_FUTURE = "2999-01-01T00:00:00Z"
+    STATUS_RESULT = {"COMPLETE": "SUCCESS", "PARTIALLY_COMPLETE": "PARTIAL", "NOT_STARTED": "FAILED"}
 
     def __init__(self, ds: Dataset, request_tables=("sample_deletion_requests", "deletion_requests"),
                  eligible_case_ids: set[str] | None = None, extra_requests=()):
@@ -908,10 +910,16 @@ class AccountLinker:
             window = [row for row in self.account_deletes if lo <= parse_time(row["event_time"]) <= hi]
             if ev:  # several evidence accounts: the activity window picks among them
                 window = [row for row in window if row["resource_id"] in ev] or window
-            candidates[cid] = [
+            rows = [
                 row for row in window
                 if not owners.get(row["resource_id"]) or user in owners[row["resource_id"]]
             ]
+            # The workflow's reported status mirrors the result of the request's own account
+            # deletion (COMPLETE <- SUCCESS, PARTIALLY_COMPLETE <- PARTIAL, NOT_STARTED <- FAILED):
+            # prefer candidates whose result matches. The result says nothing about the actual
+            # state; it only tells which delete belongs to which request.
+            expected = self.STATUS_RESULT.get(req["reported_status"])
+            candidates[cid] = [row for row in rows if row["reported_result"] == expected] or rows
 
         taken = {link.resource_id for link in self.links.values() if link.resource_id}
         changed = True

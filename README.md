@@ -72,7 +72,7 @@ Both model caches mean a re-run makes no calls.
   - Direct identifiers come first.
   - Then resource IDs and log `trace_id` groups.
   - Data-catalog rows (`LINK_RESOURCE_IDENTITY`) resolve aliases such as file names and statement numbers.
-  - The account is the deletion worker's `DELETE_RECORD` in the request's processing window, with one-to-one elimination across all requests.
+  - The account is the deletion worker's `DELETE_RECORD` in the request's processing window, preferring the delete whose result matches the request's reported status, with one-to-one elimination across all requests.
   - Anonymized analytics records go to the request whose processing batch ran nearest in time.
 - **Policy:** `deletion_rules.csv` by category:
   - Delete records.
@@ -185,15 +185,15 @@ Full details: [`code/evaluation/evaluation_report.md`](./code/evaluation/evaluat
 | Metric | Score |
 |---|---|
 | Status accuracy | 32/32 |
-| Step precision / recall / F1 | 0.989 / 0.938 / 0.963 |
-| Sequence accuracy | 21/32 |
+| Step precision / recall / F1 | 0.989 / 0.964 / 0.976 |
+| Sequence accuracy | 24/32 |
 
 **Full set (518 cases):**
 
 | Status | Rows |
 |---|---|
-| COMPLETE | 158 |
-| INCOMPLETE | 350 |
+| COMPLETE | 157 |
+| INCOMPLETE | 351 |
 | NOT_APPLICABLE | 10 |
 
 The validator reports 0 contract errors.
